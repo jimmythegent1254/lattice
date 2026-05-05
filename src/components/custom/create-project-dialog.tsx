@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/field";
 import { useForm } from "@tanstack/react-form";
 import { Plus } from "lucide-react";
-import { useState } from "react";
 import * as z from "zod";
 import { Input } from "../ui/input";
 import {
@@ -36,6 +35,8 @@ export type Project = {
 };
 
 interface CreateProjectDialogProps {
+	open: boolean;
+	setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 	setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
 }
 
@@ -50,9 +51,11 @@ const formSchema = z.object({
 		.max(100, "Description must be at most 100 characters."),
 });
 
-export function CreateProjectDialog({ setProjects }: CreateProjectDialogProps) {
-	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-
+export function CreateProjectDialog({
+	setProjects,
+	open,
+	setOpen,
+}: CreateProjectDialogProps) {
 	const form = useForm({
 		defaultValues: {
 			projectName: "",
@@ -73,15 +76,15 @@ export function CreateProjectDialog({ setProjects }: CreateProjectDialogProps) {
 					projectOwner: "me",
 				},
 			]);
-			setDialogOpen(false);
+			setOpen(false);
 		},
 	});
 	return (
-		<Dialog open={dialogOpen}>
+		<Dialog open={open}>
 			<DialogTrigger asChild>
 				<Button
 					onClick={() => {
-						setDialogOpen(true);
+						setOpen(true);
 					}}
 					className="bg-blue-600 hover:bg-blue-700 p-1 text-white"
 				>

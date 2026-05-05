@@ -12,7 +12,7 @@ import {
 	CardTitle,
 } from "#/components/ui/card";
 import { createFileRoute } from "@tanstack/react-router";
-import { Box, Trash } from "lucide-react";
+import { Box, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/dashboard")({
@@ -20,6 +20,8 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function RouteComponent() {
+	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+
 	const [projects, setProjects] = useState<Project[]>([
 		{
 			projectName: "Dashboard Redesign",
@@ -77,7 +79,11 @@ function RouteComponent() {
 				<Logo />
 
 				<div className="flex items-center gap-2">
-					<CreateProjectDialog setProjects={setProjects} />
+					<CreateProjectDialog
+						setProjects={setProjects}
+						open={dialogOpen}
+						setOpen={setDialogOpen}
+					/>
 					<ModeToggle />
 				</div>
 			</header>
@@ -115,13 +121,22 @@ function RouteComponent() {
 											</Button>
 										</CardAction>
 									</CardHeader>
-									<CardContent className="flex justify-between text-sm text-slate-800">
-										<span>3 tasks</span>
-										<span>1 done</span>
+									<CardContent className="flex justify-between text-xs text-slate-800">
+										<span className="dark:text-slate-300">3 tasks</span>
+										<span className="dark:text-slate-300">1 done</span>
 									</CardContent>
 								</Card>
 							);
 						})}
+						<Card
+							onClick={() => setDialogOpen(true)}
+							className="dark:bg-neutral-900 group flex items-center justify-center border-2 border-dashed border-border cursor-pointer transition-all hover:border-blue-400 hover:shadow-md"
+						>
+							<div className="flex items-center gap-2 text-muted-foreground group-hover:text-blue-400 transition-colors">
+								<Plus size={"18"} />
+								<span>Create project</span>
+							</div>
+						</Card>
 					</div>
 				</div>
 			</div>
