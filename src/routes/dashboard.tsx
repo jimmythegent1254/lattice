@@ -5,7 +5,6 @@ import { ModeToggle } from "#/components/mode-toggle";
 import { Button } from "#/components/ui/button";
 import {
 	Card,
-	CardAction,
 	CardDescription,
 	CardFooter,
 	CardHeader,
@@ -73,83 +72,6 @@ function RouteComponent() {
 			projectStatus: "planned",
 			projectOwner: "jimmythegent",
 		},
-		{
-			projectName: "Project Analytics",
-			projectDescription:
-				"Add basic analytics for project progress and task completion rates.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Project Analytics",
-			projectDescription:
-				"Add basic analytics for project progress and task completion rates.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Project Analytics",
-			projectDescription:
-				"Add basic analytics for project progress and task completion rates.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Project Analytics",
-			projectDescription:
-				"Add basic analytics for project progress and task completion rates.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Project Analytics",
-			projectDescription:
-				"Add basic analytics for project progress and task completion rates.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Project Analytics",
-			projectDescription:
-				"Add basic analytics for project progress and task completion rates.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Project Analytics",
-			projectDescription:
-				"Add basic analytics for project progress and task completion rates.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Project Analytics",
-			projectDescription:
-				"Add basic analytics for project progress and task completion rates.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Project Analytics",
-			projectDescription:
-				"Add basic analytics for project progress and task completion rates.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Project Analytics",
-			projectDescription:
-				"Add basic analytics for project progress and task completion rates.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Project Analytics",
-			projectDescription:
-				"Add basic analytics for project progress and task completion rates.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
 	]);
 	return (
 		<div className="bg-neutral-100 dark:bg-neutral-900">
@@ -179,34 +101,68 @@ function RouteComponent() {
 								return (
 									<Card
 										key={project.projectName}
-										className="flex flex-col h-48 dark:bg-neutral-800 bg-neutral-200 group cursor-pointer border border-border transition-colors hover:border-blue-400"
+										className="group relative flex flex-col h-52 overflow-hidden bg-gradient-to-br from-neutral-50 via-white to-neutral-100 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900 border border-border/80 hover:border-blue-500/30 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/10 dark:hover:shadow-black/50 rounded-2xl cursor-pointer"
 									>
-										<CardHeader>
-											<CardTitle className="flex items-center gap-2">
-												<div className="rounded-md bg-slate-300 dark:bg-slate-700 p-2 border border-border">
-													<Box size={"16"} />
-												</div>
-												{project.projectName}
-											</CardTitle>
+										{/* Subtle accent glow on hover */}
+										<div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-all duration-500" />
 
-											<CardDescription className="whitespace-normal wrap-break-word text-sm">
+										<CardHeader className="pb-3">
+											<div className="flex items-start justify-between">
+												<CardTitle className="flex items-center gap-3 text-lg font-semibold tracking-tight transition-transform group-hover:translate-x-1">
+													<div className="p-2 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 transition-colors group-hover:bg-blue-500 group-hover:text-white">
+														<Box size={20} strokeWidth={2.5} />
+													</div>
+													{project.projectName}
+												</CardTitle>
+
+												{/* Delete button - more refined */}
+												<Button
+													variant="ghost"
+													size="icon"
+													className="opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-all duration-200"
+													onClick={(e) => {
+														e.stopPropagation(); /* delete logic */
+													}}
+												>
+													<Trash size={18} />
+												</Button>
+											</div>
+
+											<CardDescription className="text-sm text-muted-foreground line-clamp-3 mt-1 leading-snug">
 												{project.projectDescription}
 											</CardDescription>
-
-											<CardAction>
-												<Button
-													variant="link"
-													className="opacity-0 group-hover:opacity-100 hover:text-white hover:bg-red-500"
-												>
-													<Trash />
-												</Button>
-											</CardAction>
 										</CardHeader>
 
-										<CardFooter className="mt-auto flex justify-between text-xs text-slate-800">
-											<span className="dark:text-slate-300">3 tasks</span>
-											<span className="dark:text-slate-300">1 done</span>
+										<CardFooter className="mt-auto flex flex-col gap-3 pb-5">
+											{/* Progress bar with soul */}
+											<div className="w-full bg-neutral-200 dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
+												<div
+													className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-500"
+													style={{ width: "33%" }} // Replace with real progress
+												/>
+											</div>
+
+											<div className="flex justify-between items-center text-xs w-full">
+												<div className="flex items-center gap-1.5 text-muted-foreground">
+													<span className="font-medium text-foreground">
+														3 tasks
+													</span>
+													<span className="text-emerald-500 font-medium">
+														• 1 done
+													</span>
+												</div>
+
+												<div className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground">
+													<span>UPDATED</span>
+													<span className="text-foreground">2d ago</span>
+												</div>
+											</div>
 										</CardFooter>
+
+										{/* Optional: subtle floating badge */}
+										<div className="absolute -top-1 -right-1 bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white text-[10px] font-semibold px-3 py-0.5 rounded-bl-xl rounded-tr-2xl opacity-0 group-hover:opacity-100 transition-all">
+											Active
+										</div>
 									</Card>
 								);
 							})}

@@ -48,7 +48,7 @@ const formSchema = z.object({
 	projectDescription: z
 		.string()
 		.min(20, "Description must be at least 20 characters.")
-		.max(100, "Description must be at most 100 characters."),
+		.max(200, "Description must be at most 100 characters."),
 });
 
 export function CreateProjectDialog({
@@ -158,7 +158,7 @@ export function CreateProjectDialog({
 											/>
 											<InputGroupAddon align="block-end">
 												<InputGroupText className="tabular-nums">
-													{field.state.value.length}/100 characters
+													{field.state.value.length}/200 characters
 												</InputGroupText>
 											</InputGroupAddon>
 										</InputGroup>
