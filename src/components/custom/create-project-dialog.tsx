@@ -77,10 +77,11 @@ export function CreateProjectDialog({
 				},
 			]);
 			setOpen(false);
+			form.reset();
 		},
 	});
 	return (
-		<Dialog open={open}>
+		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
 				<Button
 					onClick={() => {

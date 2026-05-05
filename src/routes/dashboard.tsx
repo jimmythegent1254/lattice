@@ -6,13 +6,14 @@ import { Button } from "#/components/ui/button";
 import {
 	Card,
 	CardAction,
-	CardContent,
 	CardDescription,
+	CardFooter,
 	CardHeader,
 	CardTitle,
 } from "#/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { createFileRoute } from "@tanstack/react-router";
-import { Box, Plus, Trash } from "lucide-react";
+import { BadgePlus, Box, Trash } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/dashboard")({
@@ -72,6 +73,83 @@ function RouteComponent() {
 			projectStatus: "planned",
 			projectOwner: "jimmythegent",
 		},
+		{
+			projectName: "Project Analytics",
+			projectDescription:
+				"Add basic analytics for project progress and task completion rates.",
+			projectStatus: "planned",
+			projectOwner: "jimmythegent",
+		},
+		{
+			projectName: "Project Analytics",
+			projectDescription:
+				"Add basic analytics for project progress and task completion rates.",
+			projectStatus: "planned",
+			projectOwner: "jimmythegent",
+		},
+		{
+			projectName: "Project Analytics",
+			projectDescription:
+				"Add basic analytics for project progress and task completion rates.",
+			projectStatus: "planned",
+			projectOwner: "jimmythegent",
+		},
+		{
+			projectName: "Project Analytics",
+			projectDescription:
+				"Add basic analytics for project progress and task completion rates.",
+			projectStatus: "planned",
+			projectOwner: "jimmythegent",
+		},
+		{
+			projectName: "Project Analytics",
+			projectDescription:
+				"Add basic analytics for project progress and task completion rates.",
+			projectStatus: "planned",
+			projectOwner: "jimmythegent",
+		},
+		{
+			projectName: "Project Analytics",
+			projectDescription:
+				"Add basic analytics for project progress and task completion rates.",
+			projectStatus: "planned",
+			projectOwner: "jimmythegent",
+		},
+		{
+			projectName: "Project Analytics",
+			projectDescription:
+				"Add basic analytics for project progress and task completion rates.",
+			projectStatus: "planned",
+			projectOwner: "jimmythegent",
+		},
+		{
+			projectName: "Project Analytics",
+			projectDescription:
+				"Add basic analytics for project progress and task completion rates.",
+			projectStatus: "planned",
+			projectOwner: "jimmythegent",
+		},
+		{
+			projectName: "Project Analytics",
+			projectDescription:
+				"Add basic analytics for project progress and task completion rates.",
+			projectStatus: "planned",
+			projectOwner: "jimmythegent",
+		},
+		{
+			projectName: "Project Analytics",
+			projectDescription:
+				"Add basic analytics for project progress and task completion rates.",
+			projectStatus: "planned",
+			projectOwner: "jimmythegent",
+		},
+		{
+			projectName: "Project Analytics",
+			projectDescription:
+				"Add basic analytics for project progress and task completion rates.",
+			projectStatus: "planned",
+			projectOwner: "jimmythegent",
+		},
 	]);
 	return (
 		<div className="bg-neutral-100 dark:bg-neutral-900">
@@ -95,49 +173,54 @@ function RouteComponent() {
 							{projects.length} projects
 						</span>
 					</div>
-					<div className="grid grid-cols-3 gap-4 pt-5">
-						{projects.map((project) => {
-							return (
-								<Card
-									key={project.projectName}
-									className="dark:bg-neutral-800 bg-neutral-200 group cursor-pointer border border-border transition-colors hover:border-blue-400"
-								>
-									<CardHeader>
-										<CardTitle className="flex items-center gap-2">
-											<div className="rounded-md bg-slate-300 dark:bg-slate-700 p-2 border border-border">
-												<Box size={"16"} />
-											</div>
-											{project.projectName}
-										</CardTitle>
-										<CardDescription className="whitespace-normal wrap-break-word text-sm">
-											{project.projectDescription}
-										</CardDescription>
-										<CardAction>
-											<Button
-												variant="link"
-												className="opacity-0 group-hover:opacity-100 hover:text-white hover:bg-red-500"
-											>
-												<Trash />
-											</Button>
-										</CardAction>
-									</CardHeader>
-									<CardContent className="flex justify-between text-xs text-slate-800">
-										<span className="dark:text-slate-300">3 tasks</span>
-										<span className="dark:text-slate-300">1 done</span>
-									</CardContent>
-								</Card>
-							);
-						})}
-						<Card
-							onClick={() => setDialogOpen(true)}
-							className="dark:bg-neutral-900 group flex items-center justify-center border-2 border-dashed border-border cursor-pointer transition-all hover:border-blue-400 hover:shadow-md"
-						>
-							<div className="flex items-center gap-2 text-muted-foreground group-hover:text-blue-400 transition-colors">
-								<Plus size={"18"} />
-								<span>Create project</span>
-							</div>
-						</Card>
-					</div>
+					<ScrollArea className="h-[70vh] pr-5">
+						<div className="grid grid-cols-3 gap-4 pt-5">
+							{projects.map((project) => {
+								return (
+									<Card
+										key={project.projectName}
+										className="flex flex-col h-48 dark:bg-neutral-800 bg-neutral-200 group cursor-pointer border border-border transition-colors hover:border-blue-400"
+									>
+										<CardHeader>
+											<CardTitle className="flex items-center gap-2">
+												<div className="rounded-md bg-slate-300 dark:bg-slate-700 p-2 border border-border">
+													<Box size={"16"} />
+												</div>
+												{project.projectName}
+											</CardTitle>
+
+											<CardDescription className="whitespace-normal wrap-break-word text-sm">
+												{project.projectDescription}
+											</CardDescription>
+
+											<CardAction>
+												<Button
+													variant="link"
+													className="opacity-0 group-hover:opacity-100 hover:text-white hover:bg-red-500"
+												>
+													<Trash />
+												</Button>
+											</CardAction>
+										</CardHeader>
+
+										<CardFooter className="mt-auto flex justify-between text-xs text-slate-800">
+											<span className="dark:text-slate-300">3 tasks</span>
+											<span className="dark:text-slate-300">1 done</span>
+										</CardFooter>
+									</Card>
+								);
+							})}
+							<Card
+								onClick={() => setDialogOpen(true)}
+								className="dark:bg-neutral-900 h-48 group flex items-center justify-center border-2 border-dashed border-border cursor-pointer transition-all hover:border-blue-400 hover:shadow-md"
+							>
+								<div className="flex items-center gap-2 text-muted-foreground group-hover:text-blue-400 transition-colors">
+									<BadgePlus size={"18"} />
+									<span className="font-semibold">Create project</span>
+								</div>
+							</Card>
+						</div>
+					</ScrollArea>
 				</div>
 			</div>
 		</div>
