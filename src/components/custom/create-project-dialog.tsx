@@ -28,6 +28,17 @@ import {
 	InputGroupTextarea,
 } from "../ui/input-group";
 
+export type Project = {
+	projectName: string;
+	projectDescription: string;
+	projectStatus: string;
+	projectOwner: string;
+};
+
+interface CreateProjectDialogProps {
+	setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
+}
+
 const formSchema = z.object({
 	projectName: z
 		.string()
@@ -39,8 +50,9 @@ const formSchema = z.object({
 		.max(100, "Description must be at most 100 characters."),
 });
 
-export function CreateProjectDialog() {
+export function CreateProjectDialog({ setProjects }: CreateProjectDialogProps) {
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+
 	const form = useForm({
 		defaultValues: {
 			projectName: "",
@@ -52,6 +64,15 @@ export function CreateProjectDialog() {
 		onSubmit: async ({ value }) => {
 			// Do something with form data
 			console.log(value);
+			setProjects((prev) => [
+				...prev,
+				{
+					projectName: value.projectName,
+					projectDescription: value.projectDescription,
+					projectStatus: "planned",
+					projectOwner: "me",
+				},
+			]);
 			setDialogOpen(false);
 		},
 	});
