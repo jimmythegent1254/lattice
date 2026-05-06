@@ -20,6 +20,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
     "@orpc/client": "^1.13.6",
     "@orpc/json-schema": "^1.13.6",
     "@orpc/openapi": "^1.13.6",

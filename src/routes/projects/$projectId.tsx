@@ -19,7 +19,9 @@ import {
 } from "#/components/ui/sidebar";
 import { Skeleton } from "#/components/ui/skeleton";
 import { orpc } from "#/orpc/client";
-import { useQuery } from "@tanstack/react-query";
+import type { DropResult } from "@hello-pangea/dnd";
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/projects/$projectId")({
@@ -29,17 +31,27 @@ export const Route = createFileRoute("/projects/$projectId")({
 type Task = {
 	id: string;
 	title: string;
+	description: string | null;
 	status: "todo" | "in_progress" | "done";
+	priority: "low" | "medium" | "high" | "urgent";
+	projectId: string;
+	assignee: string | null;
+	order: number;
+	dueDate: Date | null;
+	createdAt: Date | null;
+	updatedAt: Date | null;
 };
 
 function Panel({
 	type,
 	tasks,
 	isLoading,
+	droppableId,
 }: {
 	type: "Todo" | "In Progress" | "Done";
 	tasks: Task[];
 	isLoading: boolean;
+	droppableId: string;
 }) {
 	const statusMap = {
 		Todo: "todo",
@@ -67,23 +79,50 @@ function Panel({
 				)}
 			</div>
 
-			<div className="flex-1 p-3 space-y-3 overflow-auto">
-				{isLoading ? (
-					Array.from({ length: 4 }).map((_, i) => <TaskCardSkeleton key={i} />)
-				) : filteredTasks.length > 0 ? (
-					filteredTasks.map((task) => <TaskCard key={task.id} task={task} />)
-				) : (
-					<div className="h-32 flex items-center justify-center text-muted-foreground">
-						No tasks in this column
+			<Droppable droppableId={droppableId}>
+				{(provided, snapshot) => (
+					<div
+						ref={provided.innerRef}
+						{...provided.droppableProps}
+						className={`flex-1 p-3 space-y-3 overflow-auto transition-colors min-h-0 ${
+							snapshot.isDraggingOver ? "bg-muted/50" : ""
+						}`}
+					>
+						{isLoading ? (
+							Array.from({ length: 4 }).map((_, i) => (
+								<TaskCardSkeleton key={i} />
+							))
+						) : filteredTasks.length > 0 ? (
+							filteredTasks.map((task, index) => (
+								<Draggable key={task.id} draggableId={task.id} index={index}>
+									{(provided, snapshot) => (
+										<div
+											ref={provided.innerRef}
+											{...provided.draggableProps}
+											{...provided.dragHandleProps}
+											className={snapshot.isDragging ? "opacity-75" : ""}
+										>
+											<TaskCard task={task} />
+										</div>
+									)}
+								</Draggable>
+							))
+						) : (
+							<div className="h-32 flex items-center justify-center text-muted-foreground text-sm">
+								No tasks in this column
+							</div>
+						)}
+						{provided.placeholder}
 					</div>
 				)}
-			</div>
+			</Droppable>
 		</div>
 	);
 }
 
 function RouteComponent() {
 	const { projectId } = useParams({ from: "/projects/$projectId" });
+	const queryClient = useQueryClient();
 
 	const projectQuery = useQuery(
 		orpc.projects.getProjectById.queryOptions({
@@ -97,9 +136,48 @@ function RouteComponent() {
 		}),
 	);
 
+	// Mutation to update task status
+	const updateTaskStatus = useMutation(
+		orpc.tasks.update.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: orpc.tasks.list.queryKey({ input: { projectId } }),
+				});
+			},
+		}),
+	);
+
 	const isLoading = projectQuery.isPending || tasksQuery.isPending;
 
-	// Error handling
+	const onDragEnd = (result: DropResult) => {
+		const { destination, source, draggableId } = result;
+
+		if (!destination) return;
+		if (
+			destination.droppableId === source.droppableId &&
+			destination.index === source.index
+		) {
+			return;
+		}
+
+		const newStatus = destination.droppableId as Task["status"];
+
+		// Optimistic update
+		queryClient.setQueryData(
+			orpc.tasks.list.queryKey({ input: { projectId } }),
+			(old: Task[] | undefined) =>
+				old?.map((task) =>
+					task.id === draggableId ? { ...task, status: newStatus } : task,
+				),
+		);
+
+		// Send update to backend
+		updateTaskStatus.mutate({
+			id: draggableId,
+			status: newStatus,
+		});
+	};
+
 	if (projectQuery.error) {
 		return (
 			<div className="p-8">
@@ -150,23 +228,28 @@ function RouteComponent() {
 					</header>
 
 					{/* Kanban Board */}
-					<div className="flex w-full gap-4 p-4">
-						<Panel
-							type="Todo"
-							tasks={tasksQuery.data ?? []}
-							isLoading={isLoading}
-						/>
-						<Panel
-							type="In Progress"
-							tasks={tasksQuery.data ?? []}
-							isLoading={isLoading}
-						/>
-						<Panel
-							type="Done"
-							tasks={tasksQuery.data ?? []}
-							isLoading={isLoading}
-						/>
-					</div>
+					<DragDropContext onDragEnd={onDragEnd}>
+						<div className="flex w-full gap-4 p-4">
+							<Panel
+								type="Todo"
+								tasks={tasksQuery.data ?? []}
+								isLoading={isLoading}
+								droppableId="todo"
+							/>
+							<Panel
+								type="In Progress"
+								tasks={tasksQuery.data ?? []}
+								isLoading={isLoading}
+								droppableId="in_progress"
+							/>
+							<Panel
+								type="Done"
+								tasks={tasksQuery.data ?? []}
+								isLoading={isLoading}
+								droppableId="done"
+							/>
+						</div>
+					</DragDropContext>
 				</SidebarInset>
 			</SidebarProvider>
 		</div>

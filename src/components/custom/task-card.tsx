@@ -4,6 +4,7 @@ import {
 	ArrowUp,
 	CalendarDays,
 	Equal,
+	GripVertical,
 	User,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -34,6 +35,11 @@ const priorityIcon = {
 	urgent: AlertTriangle,
 };
 
+type TaskCardProps = {
+	task: Task;
+	onMove: (taskId: string, newStatus: "todo" | "in_progress" | "done") => void;
+};
+
 function initials(name: string) {
 	return name
 		.split(" ")
@@ -43,26 +49,26 @@ function initials(name: string) {
 		.toUpperCase();
 }
 
-export function TaskCard({ task }: { task: Task }) {
+export function TaskCard({ task, onMove }: TaskCardProps) {
 	const Icon = priorityIcon[task.priority];
-	console.log(task);
 
 	return (
 		<Card
-			className="group block bg-card border border-border rounded-md p-3 cursor-pointer transition-all duration-200 hover:border-blue-500/70 hover:bg-accent/60
+			className="block bg-card border border-border rounded-md p-3 cursor-pointer transition-all duration-200 hover:border-blue-500/70 hover:bg-accent/60
   "
 		>
-			{" "}
 			{/* Title + priority */}
 			<div className="flex items-start justify-between gap-2">
 				<p className="text-sm font-medium line-clamp-2 flex-1">{task.title}</p>
-
-				<span
-					className={`text-[10px] px-1.5 py-0.5 rounded border flex items-center gap-1 ${priorityClass[task.priority]}`}
-				>
-					<Icon className="h-3 w-3" />
-					{task.priority}
-				</span>
+				<div className="flex items-center gap-1">
+					<span
+						className={`text-[10px] px-1.5 py-0.5 rounded border flex items-center gap-1 ${priorityClass[task.priority]}`}
+					>
+						<Icon className="h-3 w-3" />
+						{task.priority}
+					</span>
+					<GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
+				</div>
 			</div>
 			{/* Description */}
 			{task.description && (
