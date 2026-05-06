@@ -1,5 +1,6 @@
 import { AppSidebar } from "#/components/custom/app-sidebar";
 import { TaskCard } from "#/components/custom/task-card";
+import { TaskCardSkeleton } from "#/components/custom/task-card-skeleton";
 import { ModeToggle } from "#/components/mode-toggle";
 import { Badge } from "#/components/ui/badge";
 import {
@@ -16,6 +17,7 @@ import {
 	SidebarProvider,
 	SidebarTrigger,
 } from "#/components/ui/sidebar";
+import { Skeleton } from "#/components/ui/skeleton";
 import { orpc } from "#/orpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useParams } from "@tanstack/react-router";
@@ -30,94 +32,93 @@ type Task = {
 	status: "todo" | "in_progress" | "done";
 };
 
-function initials(name: string) {
-	return name
-		.split(" ")
-		.map((p) => p[0])
-		.filter(Boolean)
-		.slice(0, 2)
-		.join("")
-		.toUpperCase();
-}
-
 function Panel({
 	type,
 	tasks,
+	isLoading,
 }: {
 	type: "Todo" | "In Progress" | "Done";
 	tasks: Task[];
+	isLoading: boolean;
 }) {
 	const statusMap = {
 		Todo: "todo",
 		"In Progress": "in_progress",
 		Done: "done",
 	} as const;
-	const filteredTasks = tasks?.filter(
-		(task) => task.status === statusMap[type],
-	);
-	const typeAllocator = (type: string) => {
-		console.log(type);
-		if (type === "Todo") {
-			console.log("read");
-			return "bg-red-500";
-		} else if (type === "In Progress") {
-			return "bg-orange-500";
-		} else {
-			return "bg-green-500";
-		}
+
+	const filteredTasks = tasks.filter((task) => task.status === statusMap[type]);
+
+	const getBadgeColor = (type: string) => {
+		if (type === "Todo") return "bg-red-500";
+		if (type === "In Progress") return "bg-orange-500";
+		return "bg-green-500";
 	};
-	console.log(tasks);
+
 	return (
-		<div className="w-4/12 h-[90vh] rounded-md border border-border">
-			<div className="p-4 flex items-center gap-2">
-				<Badge className={`${typeAllocator(type)} p-1 rounded-full`} />
+		<div className="w-4/12 h-[90vh] flex flex-col rounded-xl border border-border bg-card">
+			<div className="p-4 flex items-center gap-3 border-b">
+				<Badge className={`${getBadgeColor(type)} p-1 rounded-full`} />
 				<span className="text-sm font-semibold">{type}</span>
-				<span className="text-sm text-slate-400">
-					{filteredTasks?.length ?? 0}
-				</span>
+				{!isLoading && (
+					<span className="text-sm text-muted-foreground ml-auto font-mono">
+						{filteredTasks.length}
+					</span>
+				)}
 			</div>
 
-			<Separator />
-
-			<div className="p-2 space-y-2">
-				{filteredTasks?.map((task) => (
-					<TaskCard key={task.id} task={task} />
-				))}
+			<div className="flex-1 p-3 space-y-3 overflow-auto">
+				{isLoading ? (
+					Array.from({ length: 4 }).map((_, i) => <TaskCardSkeleton key={i} />)
+				) : filteredTasks.length > 0 ? (
+					filteredTasks.map((task) => <TaskCard key={task.id} task={task} />)
+				) : (
+					<div className="h-32 flex items-center justify-center text-muted-foreground">
+						No tasks in this column
+					</div>
+				)}
 			</div>
 		</div>
 	);
 }
+
 function RouteComponent() {
 	const { projectId } = useParams({ from: "/projects/$projectId" });
 
-	const {
-		data: project,
-		isPending,
-		error,
-	} = useQuery(
+	const projectQuery = useQuery(
 		orpc.projects.getProjectById.queryOptions({
 			input: { projectId },
 		}),
 	);
 
-	const {
-		data: tasks,
-		isPending: tasksPending,
-		error: tasksError,
-	} = useQuery(orpc.tasks.list.queryOptions({ input: { projectId } }));
+	const tasksQuery = useQuery(
+		orpc.tasks.list.queryOptions({
+			input: { projectId },
+		}),
+	);
 
-	if (isPending) return <div>Loading...</div>;
-	if (error) return <div>Error: {error.message}</div>;
-	if (!project) return <div>Project not found</div>;
+	const isLoading = projectQuery.isPending || tasksQuery.isPending;
 
-	console.log("Name: ", project);
-	console.log("Tasks", tasks);
+	// Error handling
+	if (projectQuery.error) {
+		return (
+			<div className="p-8">
+				Error loading project: {projectQuery.error.message}
+			</div>
+		);
+	}
+	if (tasksQuery.error) {
+		return (
+			<div className="p-8">Error loading tasks: {tasksQuery.error.message}</div>
+		);
+	}
 
 	return (
 		<div className="flex w-full">
 			<SidebarProvider>
 				<AppSidebar />
 				<SidebarInset>
+					{/* Header */}
 					<header className="flex justify-between border-b items-center pr-3">
 						<div className="flex h-16 shrink-0 items-center gap-2 px-4">
 							<SidebarTrigger className="-ml-1" />
@@ -131,11 +132,15 @@ function RouteComponent() {
 									<BreadcrumbItem className="hidden md:block">
 										<BreadcrumbLink href="#">Projects</BreadcrumbLink>
 									</BreadcrumbItem>
-
 									<BreadcrumbSeparator className="hidden md:block" />
-
 									<BreadcrumbItem>
-										<BreadcrumbPage>{project.name}</BreadcrumbPage>
+										<BreadcrumbPage>
+											{isLoading ? (
+												<Skeleton className="h-6 w-64" />
+											) : (
+												projectQuery.data?.name || "Untitled Project"
+											)}
+										</BreadcrumbPage>
 									</BreadcrumbItem>
 								</BreadcrumbList>
 							</Breadcrumb>
@@ -144,10 +149,23 @@ function RouteComponent() {
 						<ModeToggle />
 					</header>
 
+					{/* Kanban Board */}
 					<div className="flex w-full gap-4 p-4">
-						<Panel tasks={tasks ? tasks : []} type="Todo" />
-						<Panel tasks={tasks ? tasks : []} type="In Progress" />
-						<Panel tasks={tasks ? tasks : []} type="Done" />
+						<Panel
+							type="Todo"
+							tasks={tasksQuery.data ?? []}
+							isLoading={isLoading}
+						/>
+						<Panel
+							type="In Progress"
+							tasks={tasksQuery.data ?? []}
+							isLoading={isLoading}
+						/>
+						<Panel
+							type="Done"
+							tasks={tasksQuery.data ?? []}
+							isLoading={isLoading}
+						/>
 					</div>
 				</SidebarInset>
 			</SidebarProvider>
