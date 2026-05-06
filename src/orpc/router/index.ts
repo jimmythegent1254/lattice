@@ -1,6 +1,7 @@
 import {
 	createProject,
 	deleteProject,
+	getProjectById,
 	listProjects,
 	updateProject,
 } from "./projects";
@@ -18,5 +19,6 @@ export default {
 		create: createProject,
 		update: updateProject,
 		delete: deleteProject,
+		getProjectById: getProjectById,
 	},
 };

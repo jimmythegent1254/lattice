@@ -13,6 +13,14 @@ export const listProjects = os
 			.where(eq(projects.owner, input.owner));
 	});
 
+export const getProjectById = os
+	.input(z.object({ projectId: z.string() }))
+	.handler(async ({ input }) => {
+		return await db.query.projects.findFirst({
+			where: eq(projects.id, input.projectId),
+		});
+	});
+
 export const createProject = os
 	.input(
 		z.object({
