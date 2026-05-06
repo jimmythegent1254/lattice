@@ -1,6 +1,22 @@
-import { addTodo, listTodos } from './todos'
+import {
+	createProject,
+	deleteProject,
+	listProjects,
+	updateProject,
+} from "./projects";
+import { createTask, deleteTask, listTasks, updateTask } from "./tasks";
 
 export default {
-  listTodos,
-  addTodo,
-}
+	tasks: {
+		list: listTasks,
+		create: createTask,
+		update: updateTask,
+		delete: deleteTask,
+	},
+	projects: {
+		list: listProjects,
+		create: createProject,
+		update: updateProject,
+		delete: deleteProject,
+	},
+};

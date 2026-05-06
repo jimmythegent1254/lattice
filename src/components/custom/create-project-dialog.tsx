@@ -27,17 +27,9 @@ import {
 	InputGroupTextarea,
 } from "../ui/input-group";
 
-export type Project = {
-	projectName: string;
-	projectDescription: string;
-	projectStatus: string;
-	projectOwner: string;
-};
-
 interface CreateProjectDialogProps {
 	open: boolean;
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-	setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
 }
 
 const formSchema = z.object({
@@ -52,7 +44,6 @@ const formSchema = z.object({
 });
 
 export function CreateProjectDialog({
-	setProjects,
 	open,
 	setOpen,
 }: CreateProjectDialogProps) {
@@ -67,15 +58,7 @@ export function CreateProjectDialog({
 		onSubmit: async ({ value }) => {
 			// Do something with form data
 			console.log(value);
-			setProjects((prev) => [
-				...prev,
-				{
-					projectName: value.projectName,
-					projectDescription: value.projectDescription,
-					projectStatus: "planned",
-					projectOwner: "me",
-				},
-			]);
+
 			setOpen(false);
 			form.reset();
 		},

@@ -1,4 +1,3 @@
-import type { Project } from "#/components/custom/create-project-dialog";
 import { CreateProjectDialog } from "#/components/custom/create-project-dialog";
 import Logo from "#/components/custom/logo";
 import { ModeToggle } from "#/components/mode-toggle";
@@ -10,69 +9,21 @@ import {
 	CardHeader,
 	CardTitle,
 } from "#/components/ui/card";
+import { client } from "#/orpc/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { createFileRoute } from "@tanstack/react-router";
 import { BadgePlus, Box, Trash } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/dashboard")({
-	component: RouteComponent,
+component: RouteComponent,
 });
+
+const projects = await client.projects.list({ owner: "Murad" });
 
 function RouteComponent() {
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
-	const [projects, setProjects] = useState<Project[]>([
-		{
-			projectName: "Dashboard Redesign",
-			projectDescription:
-				"Improve layout, spacing, and visual hierarchy of the main dashboard.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Auth System Revamp",
-			projectDescription:
-				"Replace legacy auth with a more secure session-based system.",
-			projectStatus: "in_progress",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Task Management Core",
-			projectDescription:
-				"Build core task creation, editing, and status tracking features.",
-			projectStatus: "in_progress",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Dark Mode Polish",
-			projectDescription:
-				"Fix inconsistent theming across pages and improve contrast ratios.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "API Integration Layer",
-			projectDescription:
-				"Standardize API calls and introduce caching layer for performance.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Kanban Board UI",
-			projectDescription:
-				"Implement drag-and-drop Kanban board for task organization.",
-			projectStatus: "in_progress",
-			projectOwner: "jimmythegent",
-		},
-		{
-			projectName: "Project Analytics",
-			projectDescription:
-				"Add basic analytics for project progress and task completion rates.",
-			projectStatus: "planned",
-			projectOwner: "jimmythegent",
-		},
-	]);
 	return (
 		<div className="bg-neutral-100 dark:bg-neutral-900">
 			<header className="flex justify-between border-b items-center p-3">
@@ -80,7 +31,7 @@ function RouteComponent() {
 
 				<div className="flex items-center gap-2">
 					<CreateProjectDialog
-						setProjects={setProjects}
+						// setProjects={setProjects}
 						open={dialogOpen}
 						setOpen={setDialogOpen}
 					/>
@@ -100,11 +51,11 @@ function RouteComponent() {
 							{projects.map((project) => {
 								return (
 									<Card
-										key={project.projectName}
-										className="group relative flex flex-col h-52 overflow-hidden bg-gradient-to-br from-neutral-50 via-white to-neutral-100 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900 border border-border/80 hover:border-blue-500/30 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/10 dark:hover:shadow-black/50 rounded-2xl cursor-pointer"
+										key={project.name}
+										className="group relative flex flex-col h-52 overflow-hidden bg-linear-to-br from-neutral-50 via-white to-neutral-100 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900 border border-border/80 hover:border-blue-500/30 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/10 dark:hover:shadow-black/50 rounded-2xl cursor-pointer"
 									>
 										{/* Subtle accent glow on hover */}
-										<div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-all duration-500" />
+										<div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-blue-500 via-purple-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-all duration-500" />
 
 										<CardHeader className="pb-3">
 											<div className="flex items-start justify-between">
@@ -112,7 +63,7 @@ function RouteComponent() {
 													<div className="p-2 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 transition-colors group-hover:bg-blue-500 group-hover:text-white">
 														<Box size={20} strokeWidth={2.5} />
 													</div>
-													{project.projectName}
+													{project.name}
 												</CardTitle>
 
 												{/* Delete button - more refined */}
@@ -129,7 +80,7 @@ function RouteComponent() {
 											</div>
 
 											<CardDescription className="text-sm text-muted-foreground line-clamp-3 mt-1 leading-snug">
-												{project.projectDescription}
+												{project.description}
 											</CardDescription>
 										</CardHeader>
 
@@ -137,7 +88,7 @@ function RouteComponent() {
 											{/* Progress bar with soul */}
 											<div className="w-full bg-neutral-200 dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
 												<div
-													className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-500"
+													className="h-full bg-linear-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-500"
 													style={{ width: "33%" }} // Replace with real progress
 												/>
 											</div>
@@ -160,7 +111,7 @@ function RouteComponent() {
 										</CardFooter>
 
 										{/* Optional: subtle floating badge */}
-										<div className="absolute -top-1 -right-1 bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white text-[10px] font-semibold px-3 py-0.5 rounded-bl-xl rounded-tr-2xl opacity-0 group-hover:opacity-100 transition-all">
+										<div className="absolute -top-1 -right-1 bg-linear-to-br from-violet-500 to-fuchsia-500 text-white text-[10px] font-semibold px-3 py-0.5 rounded-bl-xl rounded-tr-2xl opacity-0 group-hover:opacity-100 transition-all">
 											Active
 										</div>
 									</Card>
