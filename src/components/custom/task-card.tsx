@@ -18,7 +18,7 @@ type Task = {
 	priority: "low" | "medium" | "high" | "urgent";
 	projectId: string;
 	assignee?: string | null;
-	dueDate?: string | null;
+	dueDate?: Date | null;
 };
 
 const priorityClass = {
@@ -37,7 +37,6 @@ const priorityIcon = {
 
 type TaskCardProps = {
 	task: Task;
-	onMove: (taskId: string, newStatus: "todo" | "in_progress" | "done") => void;
 };
 
 function initials(name: string) {
@@ -49,7 +48,7 @@ function initials(name: string) {
 		.toUpperCase();
 }
 
-export function TaskCard({ task, onMove }: TaskCardProps) {
+export function TaskCard({ task }: TaskCardProps) {
 	const Icon = priorityIcon[task.priority];
 
 	return (

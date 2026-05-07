@@ -23,10 +23,7 @@ import type { DropResult } from "@hello-pangea/dnd";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useParams } from "@tanstack/react-router";
-
-export const Route = createFileRoute("/projects/$projectId")({
-	component: RouteComponent,
-});
+import { useEffect, useState } from "react";
 
 type Task = {
 	id: string;
@@ -61,6 +58,8 @@ function Panel({
 
 	const filteredTasks = tasks.filter((task) => task.status === statusMap[type]);
 
+	const sortedTasks = filteredTasks.sort((a, b) => a.order - b.order);
+
 	const getBadgeColor = (type: string) => {
 		if (type === "Todo") return "bg-red-500";
 		if (type === "In Progress") return "bg-orange-500";
@@ -74,51 +73,59 @@ function Panel({
 				<span className="text-sm font-semibold">{type}</span>
 				{!isLoading && (
 					<span className="text-sm text-muted-foreground ml-auto font-mono">
-						{filteredTasks.length}
+						{sortedTasks.length}
 					</span>
 				)}
 			</div>
 
 			<Droppable droppableId={droppableId}>
-				{(provided, snapshot) => (
-					<div
-						ref={provided.innerRef}
-						{...provided.droppableProps}
-						className={`flex-1 p-3 space-y-3 overflow-auto transition-colors min-h-0 ${
-							snapshot.isDraggingOver ? "bg-muted/50" : ""
-						}`}
-					>
-						{isLoading ? (
-							Array.from({ length: 4 }).map((_, i) => (
-								<TaskCardSkeleton key={i} />
-							))
-						) : filteredTasks.length > 0 ? (
-							filteredTasks.map((task, index) => (
-								<Draggable key={task.id} draggableId={task.id} index={index}>
-									{(provided, snapshot) => (
-										<div
-											ref={provided.innerRef}
-											{...provided.draggableProps}
-											{...provided.dragHandleProps}
-											className={snapshot.isDragging ? "opacity-75" : ""}
-										>
-											<TaskCard task={task} />
-										</div>
-									)}
-								</Draggable>
-							))
-						) : (
-							<div className="h-32 flex items-center justify-center text-muted-foreground text-sm">
-								No tasks in this column
-							</div>
-						)}
-						{provided.placeholder}
-					</div>
-				)}
+				{(provided, snapshot) => {
+					return (
+						<div
+							ref={provided.innerRef}
+							{...provided.droppableProps}
+							className={`flex-1 p-3 space-y-3 overflow-auto transition-colors min-h-0 ${
+								snapshot.isDraggingOver ? "bg-muted/50" : ""
+							}`}
+						>
+							{isLoading ? (
+								Array.from({ length: 4 }).map((_, i) => (
+									<TaskCardSkeleton key={`key_${i}`} />
+								))
+							) : sortedTasks.length > 0 ? (
+								sortedTasks.map((task, index) => (
+									<Draggable key={task.id} draggableId={task.id} index={index}>
+										{(provided, snapshot) => {
+											return (
+												<div
+													ref={provided.innerRef}
+													{...provided.draggableProps}
+													{...provided.dragHandleProps}
+													className={snapshot.isDragging ? "opacity-75" : ""}
+												>
+													<TaskCard task={task} />
+												</div>
+											);
+										}}
+									</Draggable>
+								))
+							) : (
+								<div className="h-32 flex items-center justify-center text-muted-foreground text-sm">
+									No tasks in this column
+								</div>
+							)}
+							{provided.placeholder}
+						</div>
+					);
+				}}
 			</Droppable>
 		</div>
 	);
 }
+
+export const Route = createFileRoute("/projects/$projectId")({
+	component: RouteComponent,
+});
 
 function RouteComponent() {
 	const { projectId } = useParams({ from: "/projects/$projectId" });
@@ -136,13 +143,21 @@ function RouteComponent() {
 		}),
 	);
 
+	const [localTasks, setLocalTasks] = useState<Task[]>([]);
+
+	useEffect(() => {
+		setLocalTasks(tasksQuery.data ?? []);
+	}, [tasksQuery.data]);
+
 	// Mutation to update task status
 	const updateTaskStatus = useMutation(
 		orpc.tasks.update.mutationOptions({
-			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: orpc.tasks.list.queryKey({ input: { projectId } }),
-				});
+			onSuccess: (updatedTask) => {
+				queryClient.setQueryData(
+					orpc.tasks.list.queryKey({ input: { projectId } }),
+					(old: Task[] | undefined) =>
+						old?.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
+				);
 			},
 		}),
 	);
@@ -161,20 +176,30 @@ function RouteComponent() {
 		}
 
 		const newStatus = destination.droppableId as Task["status"];
+		const tasks = localTasks;
+		let newOrder: number | undefined;
+
+		if (destination.droppableId !== source.droppableId) {
+			// Moving to new status, set order to last
+			const destTasks = tasks.filter((t) => t.status === newStatus);
+			const maxOrder = destTasks.length > 0 ? Math.max(...destTasks.map((t) => t.order)) : 0;
+			newOrder = maxOrder + 1;
+		}
 
 		// Optimistic update
-		queryClient.setQueryData(
-			orpc.tasks.list.queryKey({ input: { projectId } }),
-			(old: Task[] | undefined) =>
-				old?.map((task) =>
-					task.id === draggableId ? { ...task, status: newStatus } : task,
-				),
+		setLocalTasks((old) =>
+			old.map((task) =>
+				task.id === draggableId
+					? { ...task, status: newStatus, ...(newOrder !== undefined && { order: newOrder }) }
+					: task,
+			),
 		);
 
 		// Send update to backend
 		updateTaskStatus.mutate({
 			id: draggableId,
 			status: newStatus,
+			...(newOrder !== undefined && { order: newOrder }),
 		});
 	};
 
@@ -232,19 +257,19 @@ function RouteComponent() {
 						<div className="flex w-full gap-4 p-4">
 							<Panel
 								type="Todo"
-								tasks={tasksQuery.data ?? []}
+								tasks={localTasks}
 								isLoading={isLoading}
 								droppableId="todo"
 							/>
 							<Panel
 								type="In Progress"
-								tasks={tasksQuery.data ?? []}
+								tasks={localTasks}
 								isLoading={isLoading}
 								droppableId="in_progress"
 							/>
 							<Panel
 								type="Done"
-								tasks={tasksQuery.data ?? []}
+								tasks={localTasks}
 								isLoading={isLoading}
 								droppableId="done"
 							/>
@@ -255,3 +280,4 @@ function RouteComponent() {
 		</div>
 	);
 }
+

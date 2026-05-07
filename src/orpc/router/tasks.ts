@@ -1,8 +1,8 @@
-import { db } from "#/db";
-import { tasks } from "#/db/schema";
 import { os } from "@orpc/server";
 import { eq } from "drizzle-orm";
 import * as z from "zod";
+import { db } from "#/db";
+import { tasks } from "#/db/schema";
 
 export const listTasks = os
 	.input(z.object({ projectId: z.string() }))
@@ -10,7 +10,8 @@ export const listTasks = os
 		return await db
 			.select()
 			.from(tasks)
-			.where(eq(tasks.projectId, input.projectId));
+			.where(eq(tasks.projectId, input.projectId))
+			.orderBy(tasks.order);
 	});
 
 export const createTask = os
@@ -50,6 +51,7 @@ export const updateTask = os
 			priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
 			assignee: z.string().optional(),
 			dueDate: z.date().optional(),
+			order: z.number().optional(),
 		}),
 	)
 	.handler(async ({ input }) => {
